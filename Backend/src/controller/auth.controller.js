@@ -55,15 +55,15 @@ export const signup = async (req, res) => {
       password: hashedPassword,
     });
 
-    await newUser.save();
+   const savedUser = await newUser.save();
 
-    generateToken(newUser._id, res);
+    generateToken(savedUser._id, res);
 
     return res.status(201).json({
-      _id: newUser._id,
-      fullName: newUser.fullName,
-      email: newUser.email,
-      profilePic: newUser.profilePic,
+      _id: savedUser._id,
+      fullName: savedUser.fullName,
+      email: savedUser.email,
+      profilePic: savedUser.profilePic,
     });
 
   } catch (error) {
