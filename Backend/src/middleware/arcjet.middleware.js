@@ -24,7 +24,7 @@ export const arcjetProtection = async (req, res, next) => {
      }
     next();
   } catch (error) {
-    console.error("Arcjet error:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    console.log("Arcjet error:", error);
+    next();
   }
 };
