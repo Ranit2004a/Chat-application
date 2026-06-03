@@ -14,7 +14,7 @@ route.post("/logout", logout);
 
 route.put("/update-profile", protectRoute, updateProfile); 
 
-route.get("/check", protectRoute, (req, res) => {
+route.get("/check",protectRoute, (req, res) => {
   res.status(200).json({
     isAuthenticated: true,
     user: req.user
