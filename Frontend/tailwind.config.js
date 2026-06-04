@@ -1,3 +1,5 @@
+import daisyui from 'daisyui';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -5,7 +7,66 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        "secondary-container": "#e5e2e1",
+        "primary": "#914c00",
+        "secondary-fixed": "#e5e2e1",
+        "on-primary-fixed-variant": "#6e3900",
+        "on-secondary-container": "#656464",
+        "surface-container-low": "#f5f3f3",
+        "on-tertiary-fixed-variant": "#454747",
+        "on-surface": "#1b1c1c",
+        "tertiary-container": "#acadad",
+        "on-secondary-fixed": "#1c1b1b",
+        "inverse-on-surface": "#f2f0f0",
+        "on-surface-variant": "#564335",
+        "background": "#fbf9f8",
+        "error": "#ba1a1a",
+        "tertiary-fixed-dim": "#c6c6c7",
+        "on-secondary-fixed-variant": "#474646",
+        "tertiary-fixed": "#e2e2e2",
+        "on-primary-container": "#653400",
+        "error-container": "#ffdad6",
+        "on-primary-fixed": "#2f1500",
+        "on-primary": "#ffffff",
+        "secondary": "#5f5e5e",
+        "outline-variant": "#dcc1af",
+        "outline": "#897363",
+        "on-secondary": "#ffffff",
+        "surface-tint": "#914c00",
+        "surface-bright": "#fbf9f8",
+        "surface": "#fbf9f8",
+        "surface-variant": "#e4e2e2",
+        "inverse-surface": "#303031",
+        "on-tertiary-fixed": "#1a1c1c",
+        "surface-container-lowest": "#ffffff",
+        "primary-container": "#ff9124",
+        "surface-container-highest": "#e4e2e2",
+        "inverse-primary": "#ffb77e",
+        "tertiary": "#5d5f5f",
+        "surface-dim": "#dbdad9",
+        "on-error": "#ffffff",
+        "primary-fixed": "#ffdcc3",
+        "on-tertiary": "#ffffff",
+        "on-error-container": "#93000a",
+        "on-background": "#1b1c1c",
+        "surface-container": "#efeded",
+        "surface-container-high": "#e9e8e7",
+        "primary-fixed-dim": "#ffb77e",
+        "on-tertiary-container": "#3f4141",
+        "secondary-fixed-dim": "#c8c6c5"
+      },
+      fontFamily: {
+        sans: ["Plus Jakarta Sans", "sans-serif"],
+        "headline-lg": ["Plus Jakarta Sans", "sans-serif"],
+        "headline-md": ["Plus Jakarta Sans", "sans-serif"],
+        "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+        "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+        "button-text": ["Plus Jakarta Sans", "sans-serif"],
+        "label-caps": ["Plus Jakarta Sans", "sans-serif"]
+      }
+    },
   },
-  plugins: [],
+  plugins: [ daisyui ],
 }
