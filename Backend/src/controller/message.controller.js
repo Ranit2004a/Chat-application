@@ -63,9 +63,8 @@ export const sendMessage = async (req, res) => {
 export const getAllPatners = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
-        const sentMessages = await Message.find({ senderId: loggedInUserId }).select("receiverId");
-        const receivedMessages = await Message.find({ receiverId: loggedInUserId }).select("senderId");
-        const partnerIds = [...new Set([...sentMessages.map(msg => msg.receiverId), ...receivedMessages.map(msg => msg.senderId)])];
+        const messages = await Message.find({ $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }] }).select("receiverId senderId");
+        const partnerIds = [...new Set([...messages.map(msg => msg.senderId.toString() === loggedInUserId.toString() ? msg.receiverId.toString() : msg.senderId.toString())])];
         const partners = await User.find({ _id: { $in: partnerIds } }).select("-password");
         res.status(200).json(partners);
     } catch (error) {
