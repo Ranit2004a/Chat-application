@@ -9,19 +9,11 @@
     box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Vibrant background with animated gradient */
+/* Vibrant background with solid brand color */
 .vibrant-bg {
-    background: linear-gradient(135deg, #FFB877, #FC9226, #FFB877);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
+    background-color: #F77F00;
     overflow: hidden;
     position: relative;
-}
-
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
 }
 
 /* Ambient floating particles */

@@ -3,14 +3,25 @@ import { Routes, Route } from 'react-router'
 import Chatpage from './pages/Chatpage'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
+
 function App() {
   return (
-    <Routes>
-     <Route path='/signup' element={<SignUp />} />
-     <Route path='/login' element={<Login />} />
-     <Route path='/' element={<Chatpage />} />
-    </Routes>
-     
+    <div className="min-h-screen w-full vibrant-bg relative flex items-center justify-center overflow-hidden">
+      {/* Grid Overlay */}
+
+
+      {/* Glowing White Shine Spots */}
+      <div className="absolute top-0 left-4 size-96 bg-white opacity-20 blur-[100px] pointer-events-none z-0 animate-[pulse_8s_infinite_alternate]" />
+      <div className="absolute bottom-0 right-4 size-96 bg-white opacity-20 blur-[100px] pointer-events-none z-0 animate-[pulse_8s_infinite_alternate_4s]" />
+
+      <div className="relative z-10 w-full min-h-screen flex items-center justify-center">
+        <Routes>
+          <Route path='/signup' element={<SignUp />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/' element={<Chatpage />} />
+        </Routes>
+      </div>
+    </div>
   )
 }
 

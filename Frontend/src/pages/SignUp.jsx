@@ -101,7 +101,7 @@ function SignUp() {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center p-4 md:p-8 font-sans overflow-x-hidden vibrant-bg relative"
+      className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 font-sans overflow-x-hidden bg-transparent relative"
       ref={mainRef}
       onMouseMove={handleMouseMove}
     >
@@ -113,7 +113,7 @@ function SignUp() {
       <div className="bg-blob bottom-0 right-0 pointer-events-none" style={{ animationDelay: '-10s' }} />
 
       {/* Main Container: Split-Screen Island */}
-      <main className="w-full max-w-[1000px] flex flex-col md:flex-row bg-white rounded-[32px] overflow-hidden shadow-2xl relative z-10 animate-card-entrance shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
+      <main className="w-full max-w-[860px] flex flex-col md:flex-row bg-white rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.25)] relative z-10 animate-card-entrance">
         
         {/* Left Side: Form Area */}
         <section className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center bg-white">
@@ -251,7 +251,7 @@ function SignUp() {
         </section>
 
         {/* Right Side: Dark Brand Area */}
-        <section className="hidden md:flex w-1/2 relative bg-inverse-surface overflow-hidden flex-col justify-center items-center text-center p-12">
+        <section className="hidden md:flex w-1/2 relative bg-inverse-surface overflow-hidden flex-col justify-center items-center text-center p-10">
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <img 
