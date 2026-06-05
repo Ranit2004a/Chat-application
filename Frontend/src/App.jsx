@@ -3,12 +3,23 @@ import { Routes, Route } from 'react-router'
 import Chatpage from './pages/Chatpage'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
-import useAuthStore from './store/useAuthStore';
+import { useAuthStore } from './store/useAuthStore'
 
 function App() {
+  const { checkAuth, isCheckingAuth } = useAuthStore();
 
-  const { authUser, isLoading, login } = useAuthStore();
-  console.log("isloading", isLoading);
+  useEffect (() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen w-full vibrant-bg relative flex items-center justify-center overflow-hidden">
+        <div className="text-white text-2xl animate-pulse">Checking authentication...</div>
+      </div>
+    );
+  }
+
   return (
 
     <div className="min-h-screen w-full vibrant-bg relative flex items-center justify-center overflow-hidden">
