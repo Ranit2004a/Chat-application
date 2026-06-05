@@ -3,12 +3,15 @@ import { Routes, Route } from 'react-router'
 import Chatpage from './pages/Chatpage'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
+import useAuthStore from './store/useAuthStore';
 
 function App() {
-  return (
-    <div className="min-h-screen w-full vibrant-bg relative flex items-center justify-center overflow-hidden">
-      {/* Grid Overlay */}
 
+  const { authUser, isLoading, login } = useAuthStore();
+  console.log("isloading", isLoading);
+  return (
+
+    <div className="min-h-screen w-full vibrant-bg relative flex items-center justify-center overflow-hidden">
 
       {/* Glowing White Shine Spots */}
       <div className="absolute top-0 left-4 size-96 bg-white opacity-20 blur-[100px] pointer-events-none z-0 animate-[pulse_8s_infinite_alternate]" />
