@@ -183,7 +183,7 @@ function SignUp() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                    {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
                   </button>
                 </div>
               </div>
@@ -208,7 +208,7 @@ function SignUp() {
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                    {showConfirmPassword ? <MdVisibility /> : <MdVisibilityOff />}
                   </button>
                 </div>
               </div>

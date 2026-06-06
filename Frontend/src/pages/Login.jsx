@@ -147,7 +147,7 @@ function Login() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <MdVisibilityOff /> : <MdVisibility />}
+                    {showPassword ? <MdVisibility /> : <MdVisibilityOff />}
                   </button>
                 </div>
               </div>
