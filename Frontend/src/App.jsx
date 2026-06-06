@@ -1,4 +1,4 @@
-import React from 'react'
+import  React,{ useEffect } from 'react'
 import { Routes, Route } from 'react-router'
 import Chatpage from './pages/Chatpage'
 import Login from './pages/Login'
@@ -6,7 +6,7 @@ import SignUp from './pages/SignUp'
 import { useAuthStore } from './store/useAuthStore'
 
 function App() {
-  const { checkAuth, isCheckingAuth } = useAuthStore();
+  const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
 
   useEffect (() => {
     checkAuth();
