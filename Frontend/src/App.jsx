@@ -1,5 +1,5 @@
 import  React,{ useEffect } from 'react'
-import { Routes, Route } from 'react-router'
+import { Routes, Route, Navigate } from 'react-router'
 import Chatpage from './pages/Chatpage'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
@@ -30,9 +30,9 @@ function App() {
 
       <div className="relative z-10 w-full min-h-screen flex items-center justify-center">
         <Routes>
-          <Route path='/signup' element={<SignUp />} />
-          <Route path='/login' element={<Login />} />
-          <Route path='/' element={<Chatpage />} />
+          <Route path='/signup' element={!authUser ? <SignUp /> : <Navigate to={"/"} />} />
+          <Route path='/login' element={!authUser ? <Login /> : <Navigate to={"/"} />} />
+          <Route path='/' element={authUser ? <Chatpage /> : <Navigate to={"/login"} />} />
         </Routes>
       </div>
     </div>
