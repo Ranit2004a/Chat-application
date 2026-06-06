@@ -93,7 +93,7 @@ function Login() {
       <div className="bg-blob bottom-0 right-0 pointer-events-none" style={{ animationDelay: '-10s' }} />
 
       {/* Main Container: Split-Screen Island */}
-      <main className="w-full max-w-[860px] min-h-[580px] flex flex-col md:flex-row bg-white dark:bg-inverse-surface rounded-[32px] overflow-hidden shadow-2xl relative z-10 animate-card-entrance shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
+      <main className="w-full max-w-[860px] min-h-[580px] flex flex-col md:flex-row bg-white dark:bg-inverse-surface rounded-[32px] overflow-hidden  relative z-10 animate-card-entrance shadow-[0_20px_50px_rgba(0,0,0,0.25)]">
         
         {/* Left Side: Form Area */}
         <section className="flex-1 bg-white p-6 md:p-10 flex flex-col justify-center">
