@@ -21,11 +21,11 @@ export const useAuthStore = create((set) => ({
         try {
             const res = await axiosInstance.post("/auth/signup", data);
             set({ authUser: res.data });
-            alert("Account created successfully!");
+
             return true;
         } catch (error) {
             console.log("Error in signup action:", error);
-            alert(error.response?.data?.message || "Signup failed");
+
             return false;
         }
     },
@@ -34,11 +34,11 @@ export const useAuthStore = create((set) => ({
         try {
             const res = await axiosInstance.post("/auth/login", data);
             set({ authUser: res.data });
-            alert("Logged in successfully!");
+
             return true;
         } catch (error) {
             console.log("Error in login action:", error);
-            alert(error.response?.data?.message || "Login failed");
+
             return false;
         }
     },
@@ -49,7 +49,7 @@ export const useAuthStore = create((set) => ({
             set({ authUser: null });
         } catch (error) {
             console.log("Error in logout action:", error);
-            alert(error.response?.data?.message || "Logout failed");
+
         }
     },
 }));
