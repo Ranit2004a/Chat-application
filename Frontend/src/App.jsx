@@ -4,7 +4,7 @@ import Chatpage from './pages/Chatpage'
 import Login from './pages/Login'
 import SignUp from './pages/SignUp'
 import { useAuthStore } from './store/useAuthStore'
-
+import PageLoader from './components/PageLoader'
 function App() {
   const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
 
@@ -12,13 +12,8 @@ function App() {
     checkAuth();
   }, [checkAuth]);
 
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen w-full vibrant-bg relative flex items-center justify-center overflow-hidden">
-        <div className="text-white text-2xl animate-pulse">Checking authentication...</div>
-      </div>
-    );
-  }
+if (isCheckingAuth)  return  <PageLoader />
+
 
   return (
 
