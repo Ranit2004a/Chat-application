@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { useAuthStore } from '../store/useAuthStore';
 
 function Login() {
+  const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const mainRef = useRef(null);
   const bgImageRef = useRef(null);
@@ -73,10 +76,11 @@ function Login() {
     bgImageRef.current.style.transform = `scale(1.1) translate(${xAxis}px, ${yAxis}px)`;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Logging in with:', { email, password });
-    // Authentication logic will hook here
+    setIsSubmitting(true);
+    await login({ email, password });
+    setIsSubmitting(false);
   };
 
   return (
@@ -160,12 +164,12 @@ function Login() {
                 <a className="text-sm text-primary font-bold link-underline" href="#">Forgot password?</a>
               </div>
 
-              {/* Submit Button */}
               <button 
                 type="submit"
-                className="shimmer-btn w-full h-[50px] bg-on-surface text-white rounded-full text-sm font-bold tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 mt-6 glow-shadow"
+                disabled={isSubmitting}
+                className="shimmer-btn w-full h-[50px] bg-on-surface text-white rounded-full text-sm font-bold tracking-wider hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 mt-6 glow-shadow disabled:opacity-50 flex items-center justify-center"
               >
-                LOGIN
+                {isSubmitting ? 'PROCESSING...' : 'LOGIN'}
               </button>
             </form>
           </div>

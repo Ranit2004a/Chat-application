@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff, MdPerson, MdShare, MdGroups, MdPublic } from 'react-icons/md';
+import { useAuthStore } from '../store/useAuthStore';
 
 function SignUp() {
+  const { signup } = useAuthStore();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -79,7 +81,7 @@ function SignUp() {
     bgImageRef.current.style.transform = `scale(1.1) translate(${xAxis}px, ${yAxis}px)`;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       alert('Passwords do not match');
@@ -91,12 +93,8 @@ function SignUp() {
     }
 
     setIsSubmitting(true);
-    console.log('Registering user:', { fullName, email, password });
-    
-    setTimeout(() => {
-      setIsSubmitting(false);
-      alert('Account simulation successful! Welcome to FlashChat.');
-    }, 2000);
+    await signup({ username: fullName, email, password });
+    setIsSubmitting(false);
   };
 
   return (
