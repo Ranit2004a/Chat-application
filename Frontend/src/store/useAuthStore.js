@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "./lib/axios.js";
+import toast from "react-hot-toast";
 
 export const useAuthStore = create((set) => ({
     authUser: null,
@@ -21,7 +22,7 @@ export const useAuthStore = create((set) => ({
         try {
             const res = await axiosInstance.post("/auth/signup", data);
             set({ authUser: res.data });
-
+            toast.success("Account Created Successfully!")
             return true;
         } catch (error) {
             console.log("Error in signup action:", error);
@@ -34,7 +35,7 @@ export const useAuthStore = create((set) => ({
         try {
             const res = await axiosInstance.post("/auth/login", data);
             set({ authUser: res.data });
-
+            toast.success("Logged in Successfully!")
             return true;
         } catch (error) {
             console.log("Error in login action:", error);
@@ -47,6 +48,7 @@ export const useAuthStore = create((set) => ({
         try {
             await axiosInstance.post("/auth/logout");
             set({ authUser: null });
+            toast.success("Logged out Successfully!");
         } catch (error) {
             console.log("Error in logout action:", error);
 

@@ -18,44 +18,67 @@ function Chatpage() {
     getMessages,
     sendMessage,
     setSelectedUser,
+    deleteMessage,
+    editMessage,
   } = useChatStore();
 
   const { authUser, logout } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState('messages'); // 'messages' | 'contacts' | 'groups' | 'settings'
+  const [activeTab, setActiveTab] = useState('messages');
   const [searchQuery, setSearchQuery] = useState('');
   const [inputText, setInputText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
-  
+
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editInputText, setEditInputText] = useState('');
+
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // Fetch users & conversations on mount and poll conversations
+  const handleStartEdit = (msg) => {
+    setEditingMessageId(msg._id);
+    setEditInputText(msg.text || '');
+  };
+
+  const handleSaveEdit = async (messageId) => {
+    if (!editInputText.trim()) return;
+    await editMessage(messageId, editInputText);
+    setEditingMessageId(null);
+    setEditInputText('');
+  };
+
+  const handleDeleteClick = async (messageId) => {
+    if (window.confirm("Are you sure you want to delete this message?")) {
+      await deleteMessage(messageId);
+    }
+  };
+
+
   useEffect(() => {
     getUsers();
     getConversations();
 
     const convInterval = setInterval(() => {
-      getConversations();
+      getConversations(true);
     }, 6000);
 
     return () => clearInterval(convInterval);
   }, [getUsers, getConversations]);
 
-  // Poll messages for the active conversation
+
   useEffect(() => {
     if (!selectedUser) return;
-    
+
     getMessages(selectedUser._id);
 
     const msgInterval = setInterval(() => {
-      getMessages(selectedUser._id);
+      getMessages(selectedUser._id, true);
     }, 4000);
 
     return () => clearInterval(msgInterval);
   }, [selectedUser, getMessages]);
 
-  // Scroll to bottom on new messages
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -100,7 +123,7 @@ function Chatpage() {
     await sendMessage(messageData);
   };
 
-  // Helper to render user avatars
+
   const renderAvatar = (user, size = "w-10 h-10") => {
     if (user?.profilePic) {
       return (
@@ -121,7 +144,7 @@ function Chatpage() {
     );
   };
 
-  // Filter conversations & contacts
+
   const filteredConversations = conversations.filter(user =>
     user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -131,13 +154,13 @@ function Chatpage() {
   );
 
   return (
-    <main className="w-full h-[90vh] max-w-[1400px] mx-4 flex bg-surface-container-lowest rounded-xl shadow-2xl overflow-hidden relative border border-outline-variant">
-      
+    <main className="w-full h-[90vh] max-w-[1400px] mx-4 flex bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative border border-white/40">
+
       {/* 1. SideNavBar */}
-      <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-surface-container border-r border-outline-variant w-64 select-none">
+      <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-white/35 backdrop-blur-2xl border-r border-white/20 w-64 select-none">
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-black text-primary tracking-tight">FlashChat</h1>
-          <p className="text-xs text-on-surface-variant font-medium">Active Portal</p>
+          <p className="text-xs text-on-surface-variant font-medium">Active Now</p>
         </div>
 
         {/* New Chat Button */}
@@ -156,11 +179,10 @@ function Chatpage() {
         <nav className="flex-1 space-y-2">
           <button
             onClick={() => setActiveTab('messages')}
-            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
-              activeTab === 'messages'
+            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'messages'
                 ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
                 : 'text-on-surface-variant hover:bg-surface-variant/50'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'messages' ? "'FILL' 1" : "'FILL' 0" }}>chat</span>
             <span className="font-semibold text-xs tracking-wider uppercase">Messages</span>
@@ -168,11 +190,10 @@ function Chatpage() {
 
           <button
             onClick={() => setActiveTab('contacts')}
-            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
-              activeTab === 'contacts'
+            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'contacts'
                 ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
                 : 'text-on-surface-variant hover:bg-surface-variant/50'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'contacts' ? "'FILL' 1" : "'FILL' 0" }}>contacts</span>
             <span className="font-semibold text-xs tracking-wider uppercase">Contacts</span>
@@ -180,11 +201,10 @@ function Chatpage() {
 
           <button
             onClick={() => setActiveTab('groups')}
-            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
-              activeTab === 'groups'
+            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'groups'
                 ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
                 : 'text-on-surface-variant hover:bg-surface-variant/50'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'groups' ? "'FILL' 1" : "'FILL' 0" }}>group</span>
             <span className="font-semibold text-xs tracking-wider uppercase">Groups</span>
@@ -192,11 +212,10 @@ function Chatpage() {
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${
-              activeTab === 'settings'
+            className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'settings'
                 ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
                 : 'text-on-surface-variant hover:bg-surface-variant/50'
-            }`}
+              }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'settings' ? "'FILL' 1" : "'FILL' 0" }}>settings</span>
             <span className="font-semibold text-xs tracking-wider uppercase">Settings</span>
@@ -223,8 +242,8 @@ function Chatpage() {
       </aside>
 
       {/* 2. Conversations / Contacts Pane */}
-      <section className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col bg-surface border-r border-outline-variant`}>
-        
+      <section className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col bg-white/20 backdrop-blur-2xl border-r border-white/20`}>
+
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between px-6 pt-6 pb-2 border-b border-outline-variant">
           <div>
@@ -275,11 +294,10 @@ function Chatpage() {
                   <div
                     key={user._id}
                     onClick={() => setSelectedUser(user)}
-                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${
-                      selectedUser?._id === user._id
+                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${selectedUser?._id === user._id
                         ? 'bg-surface-container-high border-primary shadow-sm'
                         : 'border-transparent hover:bg-surface-container-low'
-                    }`}
+                      }`}
                   >
                     <div className="relative">
                       {renderAvatar(user, "w-12 h-12")}
@@ -313,11 +331,10 @@ function Chatpage() {
                       // Move to messages tab automatically on selection
                       setActiveTab('messages');
                     }}
-                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${
-                      selectedUser?._id === user._id
+                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${selectedUser?._id === user._id
                         ? 'bg-surface-container-high border-primary shadow-sm'
                         : 'border-transparent hover:bg-surface-container-low'
-                    }`}
+                      }`}
                   >
                     <div className="relative">
                       {renderAvatar(user, "w-12 h-12")}
@@ -349,39 +366,35 @@ function Chatpage() {
         </div>
 
         {/* Mobile Sidebar Footer Tabs */}
-        <div className="md:hidden flex border-t border-outline-variant bg-surface-container px-2 py-1 select-none">
+        <div className="md:hidden flex border-t border-white/20 bg-white/35 backdrop-blur-md px-2 py-1 select-none">
           <button
             onClick={() => setActiveTab('messages')}
-            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${
-              activeTab === 'messages' ? 'text-primary font-bold' : 'text-on-surface-variant'
-            }`}
+            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'messages' ? 'text-primary font-bold' : 'text-on-surface-variant'
+              }`}
           >
             <span className="material-symbols-outlined">chat</span>
             <span className="text-[9px] font-bold tracking-wider uppercase">Chats</span>
           </button>
           <button
             onClick={() => setActiveTab('contacts')}
-            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${
-              activeTab === 'contacts' ? 'text-primary font-bold' : 'text-on-surface-variant'
-            }`}
+            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'contacts' ? 'text-primary font-bold' : 'text-on-surface-variant'
+              }`}
           >
             <span className="material-symbols-outlined">contacts</span>
             <span className="text-[9px] font-bold tracking-wider uppercase">Contacts</span>
           </button>
           <button
             onClick={() => setActiveTab('groups')}
-            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${
-              activeTab === 'groups' ? 'text-primary font-bold' : 'text-on-surface-variant'
-            }`}
+            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'groups' ? 'text-primary font-bold' : 'text-on-surface-variant'
+              }`}
           >
             <span className="material-symbols-outlined">group</span>
             <span className="text-[9px] font-bold tracking-wider uppercase">Groups</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${
-              activeTab === 'settings' ? 'text-primary font-bold' : 'text-on-surface-variant'
-            }`}
+            className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'settings' ? 'text-primary font-bold' : 'text-on-surface-variant'
+              }`}
           >
             <span className="material-symbols-outlined">settings</span>
             <span className="text-[9px] font-bold tracking-wider uppercase">Config</span>
@@ -390,11 +403,11 @@ function Chatpage() {
       </section>
 
       {/* 3. Main Chat Window */}
-      <section className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-surface-bright relative`}>
+      <section className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white/10 backdrop-blur-2xl relative`}>
         {selectedUser ? (
           <>
             {/* Header */}
-            <header className="flex justify-between items-center w-full px-6 h-16 bg-surface border-b border-outline-variant z-10 select-none">
+            <header className="flex justify-between items-center w-full px-6 h-16 bg-white/30 backdrop-blur-md border-b border-white/20 z-10 select-none">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setSelectedUser(null)}
@@ -431,7 +444,7 @@ function Chatpage() {
 
             {/* Chat Message Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar flex flex-col bg-surface-bright/40">
-              
+
               {/* Date Separator */}
               <div className="flex justify-center select-none">
                 <span className="px-4 py-1.5 bg-surface-container rounded-full text-[10px] font-bold text-outline uppercase tracking-wider">
@@ -460,42 +473,91 @@ function Chatpage() {
                   return (
                     <div
                       key={msg._id}
-                      className={`flex items-end gap-3 max-w-[80%] ${
-                        isSentByMe ? 'self-end flex-row-reverse' : ''
-                      }`}
+                      className={`group relative flex items-end gap-3 max-w-[85%] transition-all duration-300 ${isSentByMe ? 'self-end flex-row-reverse' : ''
+                        }`}
                     >
                       {!isSentByMe && renderAvatar(selectedUser, "w-8 h-8")}
-                      
+
+                      {/* Message actions menu (Edit / Delete) - Sentinel on hover */}
+                      {isSentByMe && editingMessageId !== msg._id && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1 bg-white/90 backdrop-blur-md border border-outline-variant/30 py-1 px-1.5 rounded-full shadow-md select-none z-10 self-center">
+                          <button
+                            type="button"
+                            onClick={() => handleStartEdit(msg)}
+                            title="Edit message"
+                            className="p-1.5 hover:bg-primary-container/20 text-on-surface-variant hover:text-primary rounded-full transition-all flex items-center justify-center"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">edit</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteClick(msg._id)}
+                            title="Delete message"
+                            className="p-1.5 hover:bg-error-container/20 text-on-surface-variant hover:text-error rounded-full transition-all flex items-center justify-center"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">delete</span>
+                          </button>
+                        </div>
+                      )}
+
                       <div className="flex flex-col gap-1.5">
                         {/* Text / Image Container */}
-                        <div
-                          className={`p-4 rounded-2xl shadow-sm ${
-                            isSentByMe
-                              ? 'bg-secondary-container text-on-secondary-container rounded-br-none'
-                              : 'bg-surface-container-high text-on-surface rounded-bl-none'
-                          }`}
-                        >
-                          {msg.image && (
-                            <img
-                              src={msg.image}
-                              alt="Attachment"
-                              className="max-w-xs max-h-48 rounded-xl object-cover mb-2 border border-outline-variant shadow-sm"
+                        {editingMessageId === msg._id ? (
+                          /* Inline Editor */
+                          <div className="flex flex-col gap-2 min-w-[220px] bg-white/90 p-3.5 rounded-2xl rounded-br-none border border-outline-variant/40 shadow-md">
+                            <textarea
+                              value={editInputText}
+                              onChange={(e) => setEditInputText(e.target.value)}
+                              className="w-full text-xs p-2.5 bg-surface-container border border-outline-variant focus:ring-1 focus:ring-primary focus:border-primary rounded-xl text-on-surface font-semibold font-sans outline-none resize-none"
+                              rows={2}
                             />
-                          )}
-                          {msg.text && (
-                            <p className="text-sm font-medium leading-relaxed break-words whitespace-pre-line">
-                              {msg.text}
-                            </p>
-                          )}
-                          
-                          {/* Time & Read Status */}
-                          <div className={`flex items-center justify-end gap-1 mt-1.5 opacity-75`}>
-                            <span className="text-[9px] font-bold">{formattedTime}</span>
-                            {isSentByMe && (
-                              <span className="material-symbols-outlined text-[14px] text-primary">done_all</span>
-                            )}
+                            <div className="flex items-center justify-end gap-1.5 select-none">
+                              <button
+                                type="button"
+                                onClick={() => setEditingMessageId(null)}
+                                className="px-2.5 py-1 text-[10px] font-bold text-on-surface-variant hover:bg-outline-variant/30 rounded-lg transition-all"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEdit(msg._id)}
+                                className="px-2.5 py-1 text-[10px] font-bold bg-primary text-on-primary rounded-lg hover:opacity-90 transition-all shadow-sm"
+                              >
+                                Save
+                              </button>
+                            </div>
                           </div>
-                        </div>
+                        ) : (
+                          /* Standard Message bubble */
+                          <div
+                            className={`p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 ${isSentByMe
+                                ? 'bg-gradient-to-tr from-primary to-[#ff9124] text-white rounded-br-none border border-primary/20'
+                                : 'bg-white/80 backdrop-blur-md text-on-surface rounded-bl-none border border-outline-variant/30'
+                              }`}
+                          >
+                            {msg.image && (
+                              <img
+                                src={msg.image}
+                                alt="Attachment"
+                                className="max-w-xs max-h-48 rounded-xl object-cover mb-2 border border-outline-variant shadow-sm"
+                              />
+                            )}
+                            {msg.text && (
+                              <p className="text-sm font-medium leading-relaxed break-words whitespace-pre-line">
+                                {msg.text}
+                              </p>
+                            )}
+
+                            {/* Time & Read Status */}
+                            <div className={`flex items-center justify-end gap-1 mt-1.5 opacity-75`}>
+                              <span className="text-[9px] font-bold">{formattedTime}</span>
+                              {isSentByMe && (
+                                <span className="material-symbols-outlined text-[14px] text-white/80">done_all</span>
+                              )}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
@@ -505,9 +567,9 @@ function Chatpage() {
             </div>
 
             {/* Bottom Input Bar */}
-            <footer className="p-6 bg-surface border-t border-outline-variant">
+            <footer className="p-6 bg-white/35 backdrop-blur-md border-t border-white/20">
               <form onSubmit={handleSend} className="space-y-4">
-                
+
                 {/* Image Preview attachment panel */}
                 {imagePreview && (
                   <div className="flex items-center gap-3 bg-surface-container-low p-3 rounded-2xl border border-outline-variant max-w-xs animate-card-entrance select-none">
@@ -534,7 +596,7 @@ function Chatpage() {
                 )}
 
                 <div className="flex items-center gap-4 bg-surface-container-low p-2 rounded-2xl focus-within:ring-2 focus-within:ring-primary transition-all">
-                  
+
                   {/* File selectors */}
                   <input
                     type="file"
@@ -543,7 +605,7 @@ function Chatpage() {
                     onChange={handleImageChange}
                     className="hidden"
                   />
-                  
+
                   <button
                     type="button"
                     title="Add file"
@@ -585,9 +647,9 @@ function Chatpage() {
                     <button
                       type="submit"
                       disabled={isSending || (!inputText.trim() && !imagePreview)}
-                      className="w-12 h-12 bg-primary text-on-primary rounded-xl flex items-center justify-center glow-shadow hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
+                      className="w-12 h-12 bg-gradient-to-r from-primary to-[#ff9124] hover:shadow-[0_8px_20px_rgba(247,127,0,0.3)] shadow-md text-white hover:scale-105 active:scale-95 transition-all duration-300 rounded-xl flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
                     >
-                      <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      <span className="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>
                         send
                       </span>
                     </button>
@@ -599,17 +661,17 @@ function Chatpage() {
         ) : (
           /* Empty Chat Page welcome view */
           <div className="flex-1 flex flex-col items-center justify-center p-8 select-none text-center">
-            
+
             {/* Ambient background decoration blobs */}
             <div className="absolute top-20 right-20 w-64 h-64 bg-primary-container opacity-5 rounded-full blur-3xl -z-10 animate-pulse"></div>
             <div className="absolute bottom-40 left-10 w-48 h-48 bg-tertiary-container opacity-5 rounded-full blur-3xl -z-10 animate-pulse"></div>
-            
+
             {/* Logo branding display */}
             <div className="mb-6 flex justify-center items-center gap-2 bg-primary-container/20 px-5 py-2.5 rounded-full border border-primary/10">
               <span className="material-symbols-outlined text-primary text-[24px]">chat</span>
               <h2 className="text-lg font-black text-primary tracking-tight">FlashChat</h2>
             </div>
-            
+
             <h3 className="text-2xl font-black text-on-surface mb-2 font-sans tracking-tight">Welcome, {authUser?.fullName || 'User'}!</h3>
             <p className="text-xs text-on-surface-variant max-w-sm leading-relaxed mb-8">
               Select a conversation from the active thread list on the left to review message history, or find a new contact to start sharing ideas.

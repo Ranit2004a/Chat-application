@@ -84,3 +84,54 @@ export const getAllPatners = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
+export const deleteMessage = async (req, res) => {
+    try {
+        const { id: messageId } = req.params;
+        const myId = req.user._id;
+
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ error: "Message not found" });
+        }
+
+        if (message.senderId.toString() !== myId.toString()) {
+            return res.status(403).json({ error: "Unauthorized to delete this message" });
+        }
+
+        await Message.findByIdAndDelete(messageId);
+        res.status(200).json({ message: "Message deleted successfully" });
+    } catch (error) {
+        console.log("error in deleteMessage controller", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+export const editMessage = async (req, res) => {
+    try {
+        const { id: messageId } = req.params;
+        const { text } = req.body;
+        const myId = req.user._id;
+
+        if (!text || !text.trim()) {
+            return res.status(400).json({ error: "Message text is required" });
+        }
+
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ error: "Message not found" });
+        }
+
+        if (message.senderId.toString() !== myId.toString()) {
+            return res.status(403).json({ error: "Unauthorized to edit this message" });
+        }
+
+        message.text = text;
+        await message.save();
+        res.status(200).json(message);
+    } catch (error) {
+        console.log("error in editMessage controller", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
