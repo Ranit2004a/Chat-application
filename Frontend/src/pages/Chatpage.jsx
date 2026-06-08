@@ -124,6 +124,21 @@ function Chatpage() {
   };
 
 
+  const formatMessageDate = (dateString) => {
+    const messageDate = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    if (messageDate.toDateString() === today.toDateString()) {
+      return "Today";
+    } else if (messageDate.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    } else {
+      return messageDate.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  };
+
   const renderAvatar = (user, size = "w-10 h-10") => {
     if (user?.profilePic) {
       return (
@@ -445,13 +460,6 @@ function Chatpage() {
             {/* Chat Message Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar flex flex-col bg-surface-bright/40">
 
-              {/* Date Separator */}
-              <div className="flex justify-center select-none">
-                <span className="px-4 py-1.5 bg-surface-container rounded-full text-[10px] font-bold text-outline uppercase tracking-wider">
-                  Conversation Thread
-                </span>
-              </div>
-
               {isMessagesLoading ? (
                 <div className="flex-1 flex items-center justify-center text-xs text-outline font-semibold">
                   Loading message history...
@@ -463,105 +471,120 @@ function Chatpage() {
                   <p className="text-[11px] text-on-surface-variant mt-1">Send a text or attachment to get started.</p>
                 </div>
               ) : (
-                messages.map((msg) => {
-                  const isSentByMe = msg.senderId === authUser?._id;
-                  const formattedTime = new Date(msg.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  });
+                (() => {
+                  let lastDateString = null;
+                  return messages.map((msg) => {
+                    const isSentByMe = msg.senderId === authUser?._id;
+                    const formattedTime = new Date(msg.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    });
 
-                  return (
-                    <div
-                      key={msg._id}
-                      className={`group relative flex items-end gap-3 max-w-[85%] transition-all duration-300 ${isSentByMe ? 'self-end flex-row-reverse' : ''
-                        }`}
-                    >
-                      {!isSentByMe && renderAvatar(selectedUser, "w-8 h-8")}
+                    const msgDateString = new Date(msg.createdAt).toDateString();
+                    const showDateSeparator = msgDateString !== lastDateString;
+                    lastDateString = msgDateString;
 
-                      {/* Message actions menu (Edit / Delete) - Sentinel on hover */}
-                      {isSentByMe && editingMessageId !== msg._id && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1 bg-white/90 backdrop-blur-md border border-outline-variant/30 py-1 px-1.5 rounded-full shadow-md select-none z-10 self-center">
-                          <button
-                            type="button"
-                            onClick={() => handleStartEdit(msg)}
-                            title="Edit message"
-                            className="p-1.5 hover:bg-primary-container/20 text-on-surface-variant hover:text-primary rounded-full transition-all flex items-center justify-center"
-                          >
-                            <span className="material-symbols-outlined text-[15px]">edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteClick(msg._id)}
-                            title="Delete message"
-                            className="p-1.5 hover:bg-error-container/20 text-on-surface-variant hover:text-error rounded-full transition-all flex items-center justify-center"
-                          >
-                            <span className="material-symbols-outlined text-[15px]">delete</span>
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="flex flex-col gap-1.5">
-                        {/* Text / Image Container */}
-                        {editingMessageId === msg._id ? (
-                          /* Inline Editor */
-                          <div className="flex flex-col gap-2 min-w-[220px] bg-white/90 p-3.5 rounded-2xl rounded-br-none border border-outline-variant/40 shadow-md">
-                            <textarea
-                              value={editInputText}
-                              onChange={(e) => setEditInputText(e.target.value)}
-                              className="w-full text-xs p-2.5 bg-surface-container border border-outline-variant focus:ring-1 focus:ring-primary focus:border-primary rounded-xl text-on-surface font-semibold font-sans outline-none resize-none"
-                              rows={2}
-                            />
-                            <div className="flex items-center justify-end gap-1.5 select-none">
-                              <button
-                                type="button"
-                                onClick={() => setEditingMessageId(null)}
-                                className="px-2.5 py-1 text-[10px] font-bold text-on-surface-variant hover:bg-outline-variant/30 rounded-lg transition-all"
-                              >
-                                Cancel
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleSaveEdit(msg._id)}
-                                className="px-2.5 py-1 text-[10px] font-bold bg-primary text-on-primary rounded-lg hover:opacity-90 transition-all shadow-sm"
-                              >
-                                Save
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          /* Standard Message bubble */
-                          <div
-                            className={`p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 ${isSentByMe
-                              ? 'bg-gradient-to-tr from-primary to-[#ff9124] text-white rounded-br-none border border-primary/20'
-                              : 'bg-white/80 backdrop-blur-md text-on-surface rounded-bl-none border border-outline-variant/30'
-                              }`}
-                          >
-                            {msg.image && (
-                              <img
-                                src={msg.image}
-                                alt="Attachment"
-                                className="max-w-xs max-h-48 rounded-xl object-cover mb-2 border border-outline-variant shadow-sm"
-                              />
-                            )}
-                            {msg.text && (
-                              <p className="text-sm font-medium leading-relaxed break-words whitespace-pre-line">
-                                {msg.text}
-                              </p>
-                            )}
-
-                            {/* Time & Read Status */}
-                            <div className={`flex items-center justify-end gap-1 mt-1.5 opacity-75`}>
-                              <span className="text-[9px] font-bold">{formattedTime}</span>
-                              {isSentByMe && (
-                                <span className="material-symbols-outlined text-[14px] text-white/80">done_all</span>
-                              )}
-                            </div>
+                    return (
+                      <React.Fragment key={msg._id}>
+                        {showDateSeparator && (
+                          <div className="flex justify-center select-none my-4">
+                            <span className="px-4 py-1.5 bg-surface-container rounded-full text-[10px] font-bold text-outline uppercase tracking-wider">
+                              {formatMessageDate(msg.createdAt)}
+                            </span>
                           </div>
                         )}
-                      </div>
-                    </div>
-                  );
-                })
+                        <div
+                          className={`group relative flex items-end gap-3 max-w-[85%] transition-all duration-300 ${isSentByMe ? 'self-end flex-row-reverse' : ''
+                            }`}
+                        >
+                          {!isSentByMe && renderAvatar(selectedUser, "w-8 h-8")}
+
+                          {/* Message actions menu (Edit / Delete) - Sentinel on hover */}
+                          {isSentByMe && editingMessageId !== msg._id && (
+                            <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center gap-1 bg-white/90 backdrop-blur-md border border-outline-variant/30 py-1 px-1.5 rounded-full shadow-md select-none z-10 self-center">
+                              <button
+                                type="button"
+                                onClick={() => handleStartEdit(msg)}
+                                title="Edit message"
+                                className="p-1.5 hover:bg-primary-container/20 text-on-surface-variant hover:text-primary rounded-full transition-all flex items-center justify-center"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">edit</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteClick(msg._id)}
+                                title="Delete message"
+                                className="p-1.5 hover:bg-error-container/20 text-on-surface-variant hover:text-error rounded-full transition-all flex items-center justify-center"
+                              >
+                                <span className="material-symbols-outlined text-[15px]">delete</span>
+                              </button>
+                            </div>
+                          )}
+
+                          <div className="flex flex-col gap-1.5">
+                            {/* Text / Image Container */}
+                            {editingMessageId === msg._id ? (
+                              /* Inline Editor */
+                              <div className="flex flex-col gap-2 min-w-[220px] bg-white/90 p-3.5 rounded-2xl rounded-br-none border border-outline-variant/40 shadow-md">
+                                <textarea
+                                  value={editInputText}
+                                  onChange={(e) => setEditInputText(e.target.value)}
+                                  className="w-full text-xs p-2.5 bg-surface-container border border-outline-variant focus:ring-1 focus:ring-primary focus:border-primary rounded-xl text-on-surface font-semibold font-sans outline-none resize-none"
+                                  rows={2}
+                                />
+                                <div className="flex items-center justify-end gap-1.5 select-none">
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingMessageId(null)}
+                                    className="px-2.5 py-1 text-[10px] font-bold text-on-surface-variant hover:bg-outline-variant/30 rounded-lg transition-all"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaveEdit(msg._id)}
+                                    className="px-2.5 py-1 text-[10px] font-bold bg-primary text-on-primary rounded-lg hover:opacity-90 transition-all shadow-sm"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              /* Standard Message bubble */
+                              <div
+                                className={`p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 ${isSentByMe
+                                  ? 'bg-gradient-to-tr from-primary to-[#ff9124] text-white rounded-br-none border border-primary/20'
+                                  : 'bg-white/80 backdrop-blur-md text-on-surface rounded-bl-none border border-outline-variant/30'
+                                  }`}
+                              >
+                                {msg.image && (
+                                  <img
+                                    src={msg.image}
+                                    alt="Attachment"
+                                    className="max-w-xs max-h-48 rounded-xl object-cover mb-2 border border-outline-variant shadow-sm"
+                                  />
+                                )}
+                                {msg.text && (
+                                  <p className="text-sm font-medium leading-relaxed break-words whitespace-pre-line">
+                                    {msg.text}
+                                  </p>
+                                )}
+
+                                {/* Time & Read Status */}
+                                <div className={`flex items-center justify-end gap-1 mt-1.5 opacity-75`}>
+                                  <span className="text-[9px] font-bold">{formattedTime}</span>
+                                  {isSentByMe && (
+                                    <span className="material-symbols-outlined text-[14px] text-white/80">done_all</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </React.Fragment>
+                    );
+                  });
+                })()
               )}
               <div ref={messagesEndRef} />
             </div>
