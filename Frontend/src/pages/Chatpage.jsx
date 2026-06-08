@@ -157,7 +157,7 @@ function Chatpage() {
     <main className="w-full h-[90vh] max-w-[1400px] mx-4 flex bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative border border-white/40">
 
       {/* 1. SideNavBar */}
-      <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-white/35 backdrop-blur-2xl border-r border-white/20 w-64 select-none">
+      <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-[#E7D7CC] border-r border-[#efe0d5]/40 w-64 select-none">
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-black text-primary tracking-tight">FlashChat</h1>
           <p className="text-xs text-on-surface-variant font-medium">Active Now</p>
@@ -180,8 +180,8 @@ function Chatpage() {
           <button
             onClick={() => setActiveTab('messages')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'messages'
-                ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
-                : 'text-on-surface-variant hover:bg-surface-variant/50'
+              ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
+              : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
               }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'messages' ? "'FILL' 1" : "'FILL' 0" }}>chat</span>
@@ -191,8 +191,8 @@ function Chatpage() {
           <button
             onClick={() => setActiveTab('contacts')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'contacts'
-                ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
-                : 'text-on-surface-variant hover:bg-surface-variant/50'
+              ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
+              : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
               }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'contacts' ? "'FILL' 1" : "'FILL' 0" }}>contacts</span>
@@ -202,8 +202,8 @@ function Chatpage() {
           <button
             onClick={() => setActiveTab('groups')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'groups'
-                ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
-                : 'text-on-surface-variant hover:bg-surface-variant/50'
+              ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
+              : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
               }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'groups' ? "'FILL' 1" : "'FILL' 0" }}>group</span>
@@ -213,8 +213,8 @@ function Chatpage() {
           <button
             onClick={() => setActiveTab('settings')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'settings'
-                ? 'text-primary font-bold border-r-4 border-primary bg-surface-variant'
-                : 'text-on-surface-variant hover:bg-surface-variant/50'
+              ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
+              : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
               }`}
           >
             <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'settings' ? "'FILL' 1" : "'FILL' 0" }}>settings</span>
@@ -295,8 +295,8 @@ function Chatpage() {
                     key={user._id}
                     onClick={() => setSelectedUser(user)}
                     className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${selectedUser?._id === user._id
-                        ? 'bg-surface-container-high border-primary shadow-sm'
-                        : 'border-transparent hover:bg-surface-container-low'
+                      ? 'bg-surface-container-high border-primary shadow-sm'
+                      : 'border-transparent hover:bg-surface-container-low'
                       }`}
                   >
                     <div className="relative">
@@ -332,8 +332,8 @@ function Chatpage() {
                       setActiveTab('messages');
                     }}
                     className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${selectedUser?._id === user._id
-                        ? 'bg-surface-container-high border-primary shadow-sm'
-                        : 'border-transparent hover:bg-surface-container-low'
+                      ? 'bg-surface-container-high border-primary shadow-sm'
+                      : 'border-transparent hover:bg-surface-container-low'
                       }`}
                   >
                     <div className="relative">
@@ -532,8 +532,8 @@ function Chatpage() {
                           /* Standard Message bubble */
                           <div
                             className={`p-4 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 ${isSentByMe
-                                ? 'bg-gradient-to-tr from-primary to-[#ff9124] text-white rounded-br-none border border-primary/20'
-                                : 'bg-white/80 backdrop-blur-md text-on-surface rounded-bl-none border border-outline-variant/30'
+                              ? 'bg-gradient-to-tr from-primary to-[#ff9124] text-white rounded-br-none border border-primary/20'
+                              : 'bg-white/80 backdrop-blur-md text-on-surface rounded-bl-none border border-outline-variant/30'
                               }`}
                           >
                             {msg.image && (
@@ -595,7 +595,7 @@ function Chatpage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 bg-surface-container-low p-2 rounded-2xl focus-within:ring-2 focus-within:ring-primary transition-all">
+                <div className="flex items-center gap-4 bg-surface-container-low p-2 border border-primary rounded-full focus-within:ring-1 focus-within:ring-primary transition-all">
 
                   {/* File selectors */}
                   <input
@@ -630,7 +630,7 @@ function Chatpage() {
                     placeholder="Type your message..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    className="flex-1 bg-transparent border-none focus:ring-0 text-sm font-semibold text-on-surface py-3 px-1"
+                    className="flex-1 bg-transparent border border-on-surface/20 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary font-body-lg text-body-lg text-on-surface py-2 px-3 outline-none"
                   />
 
                   {/* Emoji Placeholder & Send button */}
@@ -647,7 +647,7 @@ function Chatpage() {
                     <button
                       type="submit"
                       disabled={isSending || (!inputText.trim() && !imagePreview)}
-                      className="w-12 h-12 bg-gradient-to-r from-primary to-[#ff9124] hover:shadow-[0_8px_20px_rgba(247,127,0,0.3)] shadow-md text-white hover:scale-105 active:scale-95 transition-all duration-300 rounded-xl flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
+                      className="w-12 h-12 bg-gradient-to-tr from-primary to-secondary-container hover:shadow-[0_8px_20px_rgba(176,100,5,0.3)] shadow-md text-white hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
                     >
                       <span className="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>
                         send
