@@ -22,9 +22,11 @@ function Chatpage() {
     editMessage,
   } = useChatStore();
 
-  const { authUser, logout } = useAuthStore();
+  const { authUser, logout, isUpdatingProfile, updateProfile } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState('messages');
+  const [activeSettingsSection, setActiveSettingsSection] = useState('profile');
+  const [isMobileSettingsDetailOpen, setIsMobileSettingsDetailOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputText, setInputText] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
@@ -34,6 +36,35 @@ function Chatpage() {
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const lastMessageIdRef = useRef(null);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setSelectedUser(null);
+    setIsMobileSettingsDetailOpen(false);
+  };
+
+  const handleProfilePicUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    if (file.size > 1024 * 1024) {
+      toast.error('Image size must be less than 1MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Pic = reader.result;
+      await updateProfile({ profilePic: base64Pic });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleStartEdit = (msg) => {
     setEditingMessageId(msg._id);
@@ -80,10 +111,21 @@ function Chatpage() {
 
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    if (!messages || messages.length === 0) {
+      lastMessageIdRef.current = null;
+      return;
     }
-  }, [messages, isMessagesLoading]);
+
+    const latestMessageId = messages[messages.length - 1]?._id;
+    
+    // Scroll only if a new message has arrived or if switching conversations (lastMessageIdRef differs)
+    if (latestMessageId && latestMessageId !== lastMessageIdRef.current) {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      }
+      lastMessageIdRef.current = latestMessageId;
+    }
+  }, [messages]);
 
   // Handle image attachment selection
   const handleImageChange = (e) => {
@@ -172,7 +214,7 @@ function Chatpage() {
     <main className="w-full h-[90vh] max-w-[1400px] mx-4 flex bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative border border-white/40">
 
       {/* 1. SideNavBar */}
-      <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-[#E7D7CC] border-r border-[#efe0d5]/40 w-64 select-none">
+      <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-[#E7D7CC] border-r border-outline-variant w-64 select-none">
         <div className="mb-8 px-2">
           <h1 className="text-2xl font-black text-primary tracking-tight">FlashChat</h1>
           <p className="text-xs text-on-surface-variant font-medium">Active Now</p>
@@ -180,10 +222,7 @@ function Chatpage() {
 
         {/* New Chat Button */}
         <button
-          onClick={() => {
-            setActiveTab('contacts');
-            setSelectedUser(null);
-          }}
+          onClick={() => handleTabChange('contacts')}
           className="mb-8 w-full py-3.5 px-6 bg-primary-container text-on-primary-container rounded-full font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
         >
           <span className="material-symbols-outlined text-[20px]">add</span>
@@ -193,7 +232,7 @@ function Chatpage() {
         {/* Navigation Tabs */}
         <nav className="flex-1 space-y-2">
           <button
-            onClick={() => setActiveTab('messages')}
+            onClick={() => handleTabChange('messages')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'messages'
               ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
               : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
@@ -204,7 +243,7 @@ function Chatpage() {
           </button>
 
           <button
-            onClick={() => setActiveTab('contacts')}
+            onClick={() => handleTabChange('contacts')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'contacts'
               ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
               : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
@@ -215,7 +254,7 @@ function Chatpage() {
           </button>
 
           <button
-            onClick={() => setActiveTab('groups')}
+            onClick={() => handleTabChange('groups')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'groups'
               ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
               : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
@@ -226,7 +265,7 @@ function Chatpage() {
           </button>
 
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabChange('settings')}
             className={`w-full flex items-center gap-3 py-3 px-4 rounded-xl transition-all ${activeTab === 'settings'
               ? 'text-primary font-bold border-r-4 border-primary bg-[#FFF1E8]'
               : 'text-on-surface-variant hover:bg-[#FFF1E8]/50'
@@ -239,7 +278,16 @@ function Chatpage() {
 
         {/* Current User Info & Logout */}
         <div className="mt-auto pt-4 flex items-center justify-between border-t border-outline-variant">
-          <div className="flex items-center gap-3 overflow-hidden">
+          <div
+            onClick={() => {
+              setActiveTab('settings');
+              setActiveSettingsSection('profile');
+              setSelectedUser(null);
+              setIsMobileSettingsDetailOpen(true);
+            }}
+            className="flex items-center gap-3 overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+            title="View Profile Settings"
+          >
             {renderAvatar(authUser, "w-10 h-10")}
             <div className="overflow-hidden">
               <p className="font-bold text-xs text-on-surface truncate">{authUser?.fullName || 'User'}</p>
@@ -257,7 +305,7 @@ function Chatpage() {
       </aside>
 
       {/* 2. Conversations / Contacts Pane */}
-      <section className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col bg-white/20 backdrop-blur-2xl border-r border-white/20`}>
+      <section className={`${selectedUser || (activeTab === 'settings' && isMobileSettingsDetailOpen) ? 'hidden md:flex' : 'flex'} w-full md:w-80 lg:w-96 flex-col bg-white/20 backdrop-blur-2xl border-r border-outline-variant`}>
 
         {/* Mobile Header */}
         <div className="md:hidden flex items-center justify-between px-6 pt-6 pb-2 border-b border-outline-variant">
@@ -274,19 +322,21 @@ function Chatpage() {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="p-6">
-          <div className="relative flex items-center">
-            <span className="absolute left-3.5 material-symbols-outlined text-outline text-[20px]">search</span>
-            <input
-              type="text"
-              placeholder={`Search ${activeTab}...`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-surface-container rounded-2xl border-none focus:ring-2 focus:ring-primary transition-all text-xs font-semibold placeholder:text-outline/70"
-            />
+        {/* Search - only for search-eligible tabs */}
+        {activeTab !== 'settings' && activeTab !== 'groups' && (
+          <div className="p-6">
+            <div className="relative flex items-center">
+              <span className="absolute left-3.5 material-symbols-outlined text-outline text-[20px]">search</span>
+              <input
+                type="text"
+                placeholder={`Search ${activeTab}...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-11 pr-4 py-3 bg-surface-container rounded-2xl border-none focus:ring-2 focus:ring-primary transition-all text-xs font-semibold placeholder:text-outline/70"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* List Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar select-none">
@@ -298,7 +348,7 @@ function Chatpage() {
                 <div className="text-center py-12 px-4">
                   <p className="text-xs text-outline font-bold">No active conversations</p>
                   <button
-                    onClick={() => setActiveTab('contacts')}
+                    onClick={() => handleTabChange('contacts')}
                     className="mt-3 text-xs text-primary font-bold hover:underline"
                   >
                     Find a contact
@@ -365,25 +415,76 @@ function Chatpage() {
             </div>
           )}
 
-          {(activeTab === 'groups' || activeTab === 'settings') && (
+          {activeTab === 'groups' && (
             <div className="flex flex-col items-center justify-center py-20 px-6 text-center select-none">
               <span className="material-symbols-outlined text-[48px] text-outline mb-4">construction</span>
               <h3 className="font-bold text-sm text-on-surface mb-1">Feature Coming Soon</h3>
               <p className="text-xs text-on-surface-variant">We're building something amazing here. Stay tuned!</p>
               <button
-                onClick={() => setActiveTab('messages')}
+                onClick={() => handleTabChange('messages')}
                 className="mt-6 py-2 px-6 bg-surface-container-high hover:bg-surface-variant text-on-surface font-bold text-xs rounded-xl transition-all active:scale-[0.98]"
               >
                 Go to Messages
               </button>
             </div>
           )}
+
+          {activeTab === 'settings' && (
+            <div className="px-4 space-y-1.5 py-4">
+              <div className="mb-6 px-2">
+                <h2 className="text-lg font-black text-primary tracking-tight">Settings</h2>
+                <p className="text-xs text-on-surface-variant font-medium">Manage your experience</p>
+              </div>
+
+              <button
+                onClick={() => {
+                  setActiveSettingsSection('profile');
+                  setIsMobileSettingsDetailOpen(true);
+                }}
+                className={`w-full flex items-center gap-3 py-3.5 px-4 rounded-xl transition-all ${activeSettingsSection === 'profile'
+                  ? 'text-primary font-bold bg-[#FFF1E8] border-l-4 border-primary'
+                  : 'text-on-surface-variant hover:bg-[#FFF1E8]/30'
+                  }`}
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: activeSettingsSection === 'profile' ? "'FILL' 1" : "'FILL' 0" }}>account_circle</span>
+                <span className="font-semibold text-xs tracking-wider uppercase text-left">My Profile</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveSettingsSection('theme');
+                  setIsMobileSettingsDetailOpen(true);
+                }}
+                className={`w-full flex items-center gap-3 py-3.5 px-4 rounded-xl transition-all ${activeSettingsSection === 'theme'
+                  ? 'text-primary font-bold bg-[#FFF1E8] border-l-4 border-primary'
+                  : 'text-on-surface-variant hover:bg-[#FFF1E8]/30'
+                  }`}
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: activeSettingsSection === 'theme' ? "'FILL' 1" : "'FILL' 0" }}>palette</span>
+                <span className="font-semibold text-xs tracking-wider uppercase text-left">Appearance</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setActiveSettingsSection('about');
+                  setIsMobileSettingsDetailOpen(true);
+                }}
+                className={`w-full flex items-center gap-3 py-3.5 px-4 rounded-xl transition-all ${activeSettingsSection === 'about'
+                  ? 'text-primary font-bold bg-[#FFF1E8] border-l-4 border-primary'
+                  : 'text-on-surface-variant hover:bg-[#FFF1E8]/30'
+                  }`}
+              >
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: activeSettingsSection === 'about' ? "'FILL' 1" : "'FILL' 0" }}>info</span>
+                <span className="font-semibold text-xs tracking-wider uppercase text-left">About FlashChat</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Mobile Sidebar Footer Tabs */}
-        <div className="md:hidden flex border-t border-white/20 bg-white/35 backdrop-blur-md px-2 py-1 select-none">
+        <div className="md:hidden flex border-t border-outline-variant bg-white/35 backdrop-blur-md px-2 py-1 select-none">
           <button
-            onClick={() => setActiveTab('messages')}
+            onClick={() => handleTabChange('messages')}
             className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'messages' ? 'text-primary font-bold' : 'text-on-surface-variant'
               }`}
           >
@@ -391,7 +492,7 @@ function Chatpage() {
             <span className="text-[9px] font-bold tracking-wider uppercase">Chats</span>
           </button>
           <button
-            onClick={() => setActiveTab('contacts')}
+            onClick={() => handleTabChange('contacts')}
             className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'contacts' ? 'text-primary font-bold' : 'text-on-surface-variant'
               }`}
           >
@@ -399,7 +500,7 @@ function Chatpage() {
             <span className="text-[9px] font-bold tracking-wider uppercase">Contacts</span>
           </button>
           <button
-            onClick={() => setActiveTab('groups')}
+            onClick={() => handleTabChange('groups')}
             className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'groups' ? 'text-primary font-bold' : 'text-on-surface-variant'
               }`}
           >
@@ -407,7 +508,7 @@ function Chatpage() {
             <span className="text-[9px] font-bold tracking-wider uppercase">Groups</span>
           </button>
           <button
-            onClick={() => setActiveTab('settings')}
+            onClick={() => handleTabChange('settings')}
             className={`flex-1 flex flex-col items-center py-2 text-center rounded-xl ${activeTab === 'settings' ? 'text-primary font-bold' : 'text-on-surface-variant'
               }`}
           >
@@ -418,15 +519,169 @@ function Chatpage() {
       </section>
 
       {/* 3. Main Chat Window */}
-      <section className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white/10 backdrop-blur-2xl relative`}>
-        {selectedUser ? (
+      <section className={`${(!selectedUser && !(activeTab === 'settings' && isMobileSettingsDetailOpen)) ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-white/10 backdrop-blur-2xl relative`}>
+        {activeTab === 'settings' ? (
+          /* Settings Panel Detail View */
+          <div className="flex-1 flex flex-col h-full bg-surface-bright/40 overflow-y-auto">
+            {/* Header */}
+            <header className="flex items-center gap-3 w-full px-6 h-16 bg-white/30 backdrop-blur-md border-b border-outline-variant z-10 select-none shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsMobileSettingsDetailOpen(false)}
+                className="md:hidden p-1.5 text-on-surface-variant hover:text-primary transition-all rounded-full hover:bg-surface-variant/50 mr-1 flex items-center justify-center"
+              >
+                <span className="material-symbols-outlined text-[22px]">arrow_back</span>
+              </button>
+              <span className="material-symbols-outlined text-primary text-[24px]">
+                {activeSettingsSection === 'profile' ? 'account_circle' : activeSettingsSection === 'theme' ? 'palette' : 'info'}
+              </span>
+              <div>
+                <h2 className="font-extrabold text-sm text-primary leading-tight">
+                  {activeSettingsSection === 'profile' ? 'My Profile' : activeSettingsSection === 'theme' ? 'Appearance' : 'About FlashChat'}
+                </h2>
+                <p className="text-[10px] text-on-surface-variant font-medium">
+                  {activeSettingsSection === 'profile' ? 'Manage your account details' : activeSettingsSection === 'theme' ? 'Customize app interface' : 'FlashChat Version 1.0'}
+                </p>
+              </div>
+            </header>
+
+            {/* Content Body */}
+            <div className="flex-1 p-6 md:p-8 flex flex-col items-center justify-start animate-card-entrance max-w-2xl mx-auto w-full">
+              {activeSettingsSection === 'profile' && (
+                <div className="w-full space-y-6">
+                  {/* Profile Pic Upload Section */}
+                  <div className="flex flex-col items-center gap-4 bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-sm relative overflow-hidden w-full">
+                    <div className="relative group">
+                      {/* Avatar Image */}
+                      <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-primary/20 shadow-md">
+                        {isUpdatingProfile ? (
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white z-10">
+                            <span className="loading loading-spinner loading-md mb-1"></span>
+                            <span className="text-[10px] font-bold tracking-wider uppercase">Uploading</span>
+                          </div>
+                        ) : null}
+                        {renderAvatar(authUser, "w-full h-full")}
+                      </div>
+
+                      {/* Camera upload overlay trigger */}
+                      {!isUpdatingProfile && (
+                        <label className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full cursor-pointer hover:scale-110 hover:shadow-lg active:scale-95 transition-all duration-300 shadow-md flex items-center justify-center">
+                          <span className="material-symbols-outlined text-[18px]">photo_camera</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleProfilePicUpload}
+                            className="hidden"
+                            disabled={isUpdatingProfile}
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    <div className="text-center">
+                      <p className="text-xs text-on-surface-variant font-medium mt-1">
+                        Click the camera icon to upload a profile photo
+                      </p>
+                      <p className="text-[10px] text-outline mt-0.5">
+                        Supports JPG, PNG, or GIF. Max size 1MB.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* User details form card */}
+                  <div className="bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-sm space-y-4 w-full">
+                    <div className="border-b border-outline-variant pb-2">
+                      <h3 className="font-bold text-xs text-primary uppercase tracking-wider">Account Information</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Full Name</label>
+                        <div className="px-4 py-3 bg-surface-container/50 rounded-xl text-xs font-semibold text-on-surface border border-outline-variant/30 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px] text-outline">person</span>
+                          {authUser?.fullName || 'N/A'}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Email Address</label>
+                        <div className="px-4 py-3 bg-surface-container/50 rounded-xl text-xs font-semibold text-on-surface border border-outline-variant/30 flex items-center gap-2 overflow-hidden">
+                          <span className="material-symbols-outlined text-[16px] text-outline">mail</span>
+                          <span className="truncate">{authUser?.email || 'N/A'}</span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Account Status</label>
+                        <div className="px-4 py-3 bg-surface-container/50 rounded-xl text-xs font-semibold text-green-600 border border-outline-variant/30 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px] text-green-500">check_circle</span>
+                          Active
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Member Since</label>
+                        <div className="px-4 py-3 bg-surface-container/50 rounded-xl text-xs font-semibold text-on-surface border border-outline-variant/30 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[16px] text-outline">calendar_today</span>
+                          {authUser?.createdAt ? new Date(authUser.createdAt).toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsSection === 'theme' && (
+                <div className="w-full space-y-6">
+                  <div className="bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-sm space-y-4 w-full">
+                    <div className="border-b border-outline-variant pb-2">
+                      <h3 className="font-bold text-xs text-primary uppercase tracking-wider">Appearance Configuration</h3>
+                    </div>
+                    <div className="py-8 flex flex-col items-center justify-center text-center">
+                      <span className="material-symbols-outlined text-[48px] text-outline mb-4">palette</span>
+                      <p className="text-xs text-on-surface font-semibold mb-1">Theme customization is coming soon</p>
+                      <p className="text-[10px] text-on-surface-variant max-w-xs">
+                        Soon you'll be able to toggle light/dark modes and pick custom brand colors. Currently, FlashChat features our default vibrant sunset style.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSettingsSection === 'about' && (
+                <div className="w-full space-y-6">
+                  <div className="bg-white/60 backdrop-blur-md p-6 rounded-2xl border border-white/30 shadow-sm space-y-4 w-full">
+                    <div className="border-b border-outline-variant pb-2 flex items-center justify-between">
+                      <h3 className="font-bold text-xs text-primary uppercase tracking-wider">About the App</h3>
+                      <span className="px-2.5 py-0.5 bg-primary-container text-primary text-[10px] font-bold rounded-full">v1.0.0</span>
+                    </div>
+                    
+                    <div className="space-y-3 text-xs text-on-surface-variant leading-relaxed">
+                      <p>
+                        <strong>FlashChat</strong> is a real-time messaging application designed with speed, modern aesthetics, and fluid interactions in mind.
+                      </p>
+                      <p>
+                        Powered by React, Tailwind CSS, Zustand, Node.js, Express, MongoDB, and Cloudinary.
+                      </p>
+                      <div className="pt-2 flex items-center gap-1 text-[11px] text-outline font-semibold">
+                        <span className="material-symbols-outlined text-[16px]">verified</span>
+                        Secure end-to-end user state protection with Arcjet & JWT.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : selectedUser ? (
           <>
             {/* Header */}
-            <header className="flex justify-between items-center w-full px-6 h-16 bg-white/30 backdrop-blur-md border-b border-white/20 z-10 select-none">
+            <header className="flex justify-between items-center w-full px-6 h-16 bg-white/30 backdrop-blur-md border-b border-outline-variant z-10 select-none border-t border-t-white/10">
               <div className="flex items-center gap-3">
                 <button
+                  type="button"
                   onClick={() => setSelectedUser(null)}
-                  className="md:hidden p-1.5 text-on-surface-variant hover:text-primary transition-all rounded-full hover:bg-surface-variant/50 mr-1"
+                  className="md:hidden p-1.5 text-on-surface-variant hover:text-primary transition-all rounded-full hover:bg-surface-variant/50 mr-1 flex items-center justify-center"
                 >
                   <span className="material-symbols-outlined text-[22px]">arrow_back</span>
                 </button>
@@ -590,7 +845,7 @@ function Chatpage() {
             </div>
 
             {/* Bottom Input Bar */}
-            <footer className="p-6 bg-white/35 backdrop-blur-md border-t border-white/20">
+            <footer className="p-6 bg-white/35 backdrop-blur-md border-t border-outline-variant">
               <form onSubmit={handleSend} className="space-y-4">
 
                 {/* Image Preview attachment panel */}

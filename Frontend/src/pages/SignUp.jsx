@@ -28,8 +28,8 @@ function SignUp() {
     const activeParticles = [];
 
     const resetParticle = (particle) => {
-      particle.style.left = Math.random() * 100 + 'vw';
-      particle.style.top = Math.random() * 100 + 'vh';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.top = Math.random() * 100 + '%';
       particle.style.opacity = Math.random() * 0.5;
     };
 
@@ -103,12 +103,14 @@ function SignUp() {
       ref={mainRef}
       onMouseMove={handleMouseMove}
     >
-      {/* Particle background container */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" ref={particleContainerRef} />
-
-      {/* Animated background blobs */}
-      <div className="bg-blob top-0 left-0 pointer-events-none" style={{ animationDelay: '0s' }} />
-      <div className="bg-blob bottom-0 right-0 pointer-events-none" style={{ animationDelay: '-10s' }} />
+      {/* Background decoration container (clips blobs and particles to prevent layout shifting) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Particle background */}
+        <div className="absolute inset-0" ref={particleContainerRef} />
+        {/* Animated background blobs */}
+        <div className="bg-blob top-0 left-0" style={{ animationDelay: '0s' }} />
+        <div className="bg-blob bottom-0 right-0" style={{ animationDelay: '-10s' }} />
+      </div>
 
       {/* Main Container: Split-Screen Island */}
       <main className="w-full max-w-[860px] flex flex-col md:flex-row bg-white rounded-[32px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.25)] relative z-10 animate-card-entrance">
