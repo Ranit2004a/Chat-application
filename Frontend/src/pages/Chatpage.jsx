@@ -3,6 +3,62 @@ import { useChatStore } from '../store/useChatStore';
 import { useAuthStore } from '../store/useAuthStore';
 import toast from 'react-hot-toast';
 
+const SidebarSkeleton = () => {
+  return (
+    <div className="space-y-3 px-2">
+      {[...Array(5)].map((_, idx) => (
+        <div key={idx} className="flex items-center gap-4 p-4 rounded-2xl animate-pulse bg-white/10">
+          <div className="relative shrink-0">
+            <div className="w-12 h-12 bg-surface-container-high rounded-full"></div>
+            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-surface-container border-2 border-surface rounded-full"></div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex justify-between items-center mb-2">
+              <div className="h-3.5 bg-surface-container-high rounded w-2/3"></div>
+              <div className="h-2.5 bg-surface-container-high rounded w-10"></div>
+            </div>
+            <div className="h-3 bg-surface-container-low rounded w-1/2"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const MessagesSkeleton = () => {
+  return (
+    <div className="flex-1 p-6 space-y-6 flex flex-col justify-end bg-surface-bright/40">
+      {[...Array(4)].map((_, idx) => {
+        const isSentByMe = idx % 2 === 0;
+        return (
+          <div
+            key={idx}
+            className={`flex items-end gap-3 max-w-[85%] animate-pulse ${
+              isSentByMe ? 'self-end flex-row-reverse' : ''
+            }`}
+          >
+            {!isSentByMe && (
+              <div className="w-8 h-8 bg-surface-container-high rounded-full shrink-0"></div>
+            )}
+            <div className="flex flex-col gap-1.5">
+              <div
+                className={`p-4 rounded-2xl shadow-sm ${
+                  isSentByMe
+                    ? 'bg-primary-container/20 rounded-br-none w-48'
+                    : 'bg-white/50 rounded-bl-none w-60'
+                }`}
+              >
+                <div className="h-3 bg-surface-container-high rounded w-5/6 mb-2"></div>
+                <div className="h-3 bg-surface-container-high rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 function Chatpage() {
   const {
     users,
@@ -343,7 +399,7 @@ function Chatpage() {
           {activeTab === 'messages' && (
             <div className="px-4 space-y-1.5">
               {isConversationsLoading ? (
-                <div className="text-center py-8 text-xs text-outline font-semibold">Loading conversations...</div>
+                <SidebarSkeleton />
               ) : filteredConversations.length === 0 ? (
                 <div className="text-center py-12 px-4">
                   <p className="text-xs text-outline font-bold">No active conversations</p>
@@ -384,7 +440,7 @@ function Chatpage() {
           {activeTab === 'contacts' && (
             <div className="px-4 space-y-1.5">
               {isUsersLoading ? (
-                <div className="text-center py-8 text-xs text-outline font-semibold">Loading contacts...</div>
+                <SidebarSkeleton />
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-12 text-xs text-outline font-bold">No contacts found</div>
               ) : (
@@ -716,9 +772,7 @@ function Chatpage() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar flex flex-col bg-surface-bright/40">
 
               {isMessagesLoading ? (
-                <div className="flex-1 flex items-center justify-center text-xs text-outline font-semibold">
-                  Loading message history...
-                </div>
+                <MessagesSkeleton />
               ) : messages.length === 0 ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-6 select-none">
                   <span className="material-symbols-outlined text-[48px] text-outline/50 mb-3">chat_bubble</span>
