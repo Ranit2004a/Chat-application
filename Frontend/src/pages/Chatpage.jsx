@@ -33,20 +33,18 @@ const MessagesSkeleton = () => {
         return (
           <div
             key={idx}
-            className={`flex items-end gap-3 max-w-[85%] animate-pulse ${
-              isSentByMe ? 'self-end flex-row-reverse' : ''
-            }`}
+            className={`flex items-end gap-3 max-w-[85%] animate-pulse ${isSentByMe ? 'self-end flex-row-reverse' : ''
+              }`}
           >
             {!isSentByMe && (
               <div className="w-8 h-8 bg-surface-container-high rounded-full shrink-0"></div>
             )}
             <div className="flex flex-col gap-1.5">
               <div
-                className={`p-4 rounded-2xl shadow-sm ${
-                  isSentByMe
+                className={`p-4 rounded-2xl shadow-sm ${isSentByMe
                     ? 'bg-primary-container/20 rounded-br-none w-48'
                     : 'bg-white/50 rounded-bl-none w-60'
-                }`}
+                  }`}
               >
                 <div className="h-3 bg-surface-container-high rounded w-5/6 mb-2"></div>
                 <div className="h-3 bg-surface-container-high rounded w-2/3"></div>
@@ -173,7 +171,7 @@ function Chatpage() {
     }
 
     const latestMessageId = messages[messages.length - 1]?._id;
-    
+
     // Scroll only if a new message has arrived or if switching conversations (lastMessageIdRef differs)
     if (latestMessageId && latestMessageId !== lastMessageIdRef.current) {
       if (messagesEndRef.current) {
@@ -184,7 +182,7 @@ function Chatpage() {
   }, [messages]);
 
   // Handle image attachment selection
-  const handleImageChange = (e) => {
+  const haleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -711,7 +709,7 @@ function Chatpage() {
                       <h3 className="font-bold text-xs text-primary uppercase tracking-wider">About the App</h3>
                       <span className="px-2.5 py-0.5 bg-primary-container text-primary text-[10px] font-bold rounded-full">v1.0.0</span>
                     </div>
-                    
+
                     <div className="space-y-3 text-xs text-on-surface-variant leading-relaxed">
                       <p>
                         <strong>FlashChat</strong> is a real-time messaging application designed with speed, modern aesthetics, and fluid interactions in mind.
