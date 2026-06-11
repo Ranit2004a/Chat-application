@@ -436,7 +436,7 @@ function Chatpage() {
                       <div className="flex justify-between items-center mb-0.5">
                         <h3 className="font-bold text-sm text-on-surface truncate">{chat.fullName}</h3>
                         {chat.lastMessageTimestamp && (
-                          <span className="text-[10px] text-outline">
+                          <span className={`text-[10px] font-semibold ${chat.unreadCount > 0 ? 'text-[#25D366]' : 'text-outline'}`}>
                             {new Date(chat.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         )}
@@ -448,7 +448,7 @@ function Chatpage() {
                         {chat.unreadCount > 0 && (
                           <span
                             key={chat.unreadCount}
-                            className="bg-green-500 text-white font-bold text-[10px] h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full shrink-0 transition-transform duration-300 animate-[pulse_0.4s_ease-in-out_1]"
+                            className={`bg-[#25D366] text-[#111b21] font-bold text-[11px] h-5 flex items-center justify-center rounded-full shrink-0 transition-transform duration-300 animate-[pulse_0.4s_ease-in-out_1] ${chat.unreadCount > 9 ? 'px-1.5 min-w-[20px]' : 'w-5'}`}
                           >
                             {chat.unreadCount > 99 ? "99+" : chat.unreadCount}
                           </span>
