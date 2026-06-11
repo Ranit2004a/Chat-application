@@ -483,7 +483,9 @@ function Chatpage() {
                   >
                     <div className="relative">
                       {renderAvatar(user, "w-12 h-12")}
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
+                      {onlineUsers.includes(user._id) && (
+                        <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
+                      )}
                     </div>
                     <div className="flex-1 overflow-hidden">
                       <h3 className="font-bold text-sm text-on-surface truncate">{user.fullName}</h3>
@@ -767,11 +769,15 @@ function Chatpage() {
                 </button>
                 <div className="relative">
                   {renderAvatar(selectedUser, "w-10 h-10")}
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-surface rounded-full"></span>
+                  {onlineUsers.includes(selectedUser._id) && (
+                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border border-surface rounded-full"></span>
+                  )}
                 </div>
                 <div>
                   <h2 className="font-extrabold text-sm text-primary leading-tight">{selectedUser.fullName}</h2>
-                  <p className="text-[10px] text-on-surface-variant font-medium">Online</p>
+                  <p className="text-[10px] text-on-surface-variant font-medium">
+                    {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+                  </p>
                 </div>
               </div>
 
