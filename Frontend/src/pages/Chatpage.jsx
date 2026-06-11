@@ -123,6 +123,29 @@ function Chatpage() {
     reader.readAsDataURL(file);
   };
 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameInput, setEditNameInput] = useState('');
+
+  const handleStartEditName = () => {
+    setEditNameInput(authUser?.fullName || '');
+    setIsEditingName(true);
+  };
+
+  const handleSaveName = async () => {
+    if (!editNameInput.trim()) {
+      toast.error("Name cannot be empty");
+      return;
+    }
+    if (editNameInput.trim() === authUser?.fullName) {
+      setIsEditingName(false);
+      return;
+    }
+    const success = await updateProfile({ fullName: editNameInput.trim() });
+    if (success) {
+      setIsEditingName(false);
+    }
+  };
+
   const handleStartEdit = (msg) => {
     setEditingMessageId(msg._id);
     setEditInputText(msg.text || '');
@@ -679,10 +702,58 @@ function Chatpage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <label className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Full Name</label>
-                        <div className="px-4 py-3 bg-surface-container/50 rounded-xl text-xs font-semibold text-on-surface border border-outline-variant/30 flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[16px] text-outline">person</span>
-                          {authUser?.fullName || 'N/A'}
-                        </div>
+                        {isEditingName ? (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 px-4 py-2 bg-surface-container/50 rounded-xl text-xs font-semibold text-on-surface border border-primary flex items-center gap-2 h-[42px]">
+                              <span className="material-symbols-outlined text-[16px] text-primary">person</span>
+                              <input
+                                type="text"
+                                value={editNameInput}
+                                onChange={(e) => setEditNameInput(e.target.value)}
+                                className="bg-transparent border-none outline-none w-full text-xs font-semibold p-0 text-on-surface focus:ring-0"
+                                placeholder="Enter your name"
+                                autoFocus
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleSaveName}
+                              disabled={isUpdatingProfile}
+                              className="p-2 bg-primary text-white rounded-xl hover:opacity-90 active:scale-95 transition-all text-xs font-bold shrink-0 h-[42px] w-[42px] flex items-center justify-center shadow-sm"
+                              title="Save Name"
+                            >
+                              {isUpdatingProfile ? (
+                                <span className="loading loading-spinner loading-xs"></span>
+                              ) : (
+                                <span className="material-symbols-outlined text-[18px]">done</span>
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setIsEditingName(false)}
+                              disabled={isUpdatingProfile}
+                              className="p-2 bg-surface-container-high text-on-surface-variant rounded-xl hover:bg-outline-variant/30 active:scale-95 transition-all text-xs font-bold shrink-0 h-[42px] w-[42px] flex items-center justify-center"
+                              title="Cancel"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">close</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 px-4 py-3 bg-surface-container/50 rounded-xl text-xs font-semibold text-on-surface border border-outline-variant/30 flex items-center gap-2 h-[42px]">
+                              <span className="material-symbols-outlined text-[16px] text-outline">person</span>
+                              <span className="truncate">{authUser?.fullName || 'N/A'}</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleStartEditName}
+                              className="p-2 bg-surface-container-high text-primary rounded-xl hover:bg-primary-container/20 active:scale-95 transition-all shrink-0 h-[42px] w-[42px] flex items-center justify-center border border-outline-variant/30"
+                              title="Edit Name"
+                            >
+                              <span className="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-1">
