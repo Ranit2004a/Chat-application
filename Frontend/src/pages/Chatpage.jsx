@@ -42,8 +42,8 @@ const MessagesSkeleton = () => {
             <div className="flex flex-col gap-1.5">
               <div
                 className={`p-4 rounded-2xl shadow-sm ${isSentByMe
-                    ? 'bg-primary-container/20 rounded-br-none w-48'
-                    : 'bg-white/50 rounded-bl-none w-60'
+                  ? 'bg-primary-container/20 rounded-br-none w-48'
+                  : 'bg-white/50 rounded-bl-none w-60'
                   }`}
               >
                 <div className="h-3 bg-surface-container-high rounded w-5/6 mb-2"></div>
@@ -74,9 +74,12 @@ function Chatpage() {
     setSelectedUser,
     deleteMessage,
     editMessage,
+    subscribeToMessages,
+    unsubscribeFromMessages,
   } = useChatStore();
 
   const { authUser, logout, isUpdatingProfile, updateProfile } = useAuthStore();
+  const { onlineUsers } = useAuthStore();
 
   const [activeTab, setActiveTab] = useState('messages');
   const [activeSettingsSection, setActiveSettingsSection] = useState('profile');
@@ -150,6 +153,11 @@ function Chatpage() {
     return () => clearInterval(convInterval);
   }, [getUsers, getConversations]);
 
+  useEffect(() => {
+    subscribeToMessages();
+    return () => unsubscribeFromMessages();
+  }, [subscribeToMessages, unsubscribeFromMessages]);
+
 
   useEffect(() => {
     if (!selectedUser) return;
@@ -182,7 +190,7 @@ function Chatpage() {
   }, [messages]);
 
   // Handle image attachment selection
-  const haleImageChange = (e) => {
+  const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -409,25 +417,43 @@ function Chatpage() {
                   </button>
                 </div>
               ) : (
-                filteredConversations.map((user) => (
+                filteredConversations.map((chat) => (
                   <div
-                    key={user._id}
-                    onClick={() => setSelectedUser(user)}
-                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${selectedUser?._id === user._id
+                    key={chat._id}
+                    onClick={() => setSelectedUser(chat)}
+                    className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all border-l-4 ${selectedUser?._id === chat._id
                       ? 'bg-surface-container-high border-primary shadow-sm'
                       : 'border-transparent hover:bg-surface-container-low'
                       }`}
                   >
                     <div className="relative">
-                      {renderAvatar(user, "w-12 h-12")}
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
+                      {renderAvatar(chat, "w-12 h-12")}
+                      {onlineUsers.includes(chat._id) && (
+                        <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-surface rounded-full"></span>
+                      )}
                     </div>
                     <div className="flex-1 overflow-hidden">
                       <div className="flex justify-between items-center mb-0.5">
-                        <h3 className="font-bold text-sm text-on-surface truncate">{user.fullName}</h3>
-                        <span className="text-[10px] text-outline">Active</span>
+                        <h3 className="font-bold text-sm text-on-surface truncate">{chat.fullName}</h3>
+                        {chat.lastMessageTimestamp && (
+                          <span className="text-[10px] text-outline">
+                            {new Date(chat.lastMessageTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        )}
                       </div>
-                      <p className="text-xs text-on-surface-variant truncate">Click to open chat thread</p>
+                      <div className="flex justify-between items-center">
+                        <p className="text-xs text-on-surface-variant truncate pr-2 flex-1">
+                          {chat.lastMessage || "Click to open chat"}
+                        </p>
+                        {chat.unreadCount > 0 && (
+                          <span
+                            key={chat.unreadCount}
+                            className="bg-green-500 text-white font-bold text-[10px] h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full shrink-0 transition-transform duration-300 animate-[pulse_0.4s_ease-in-out_1]"
+                          >
+                            {chat.unreadCount > 99 ? "99+" : chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -715,11 +741,11 @@ function Chatpage() {
                         <strong>FlashChat</strong> is a real-time messaging application designed with speed, modern aesthetics, and fluid interactions in mind.
                       </p>
                       <p>
-                        Powered by React, Tailwind CSS, Zustand, Node.js, Express, MongoDB, and Cloudinary.
+                        Powered by Me
                       </p>
                       <div className="pt-2 flex items-center gap-1 text-[11px] text-outline font-semibold">
                         <span className="material-symbols-outlined text-[16px]">verified</span>
-                        Secure end-to-end user state protection with Arcjet & JWT.
+                        Secure end-to-end user state protection
                       </div>
                     </div>
                   </div>
@@ -745,7 +771,7 @@ function Chatpage() {
                 </div>
                 <div>
                   <h2 className="font-extrabold text-sm text-primary leading-tight">{selectedUser.fullName}</h2>
-                  <p className="text-[10px] text-on-surface-variant font-medium">Online now</p>
+                  <p className="text-[10px] text-on-surface-variant font-medium">Online</p>
                 </div>
               </div>
 

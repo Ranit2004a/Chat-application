@@ -1,6 +1,7 @@
 import Message from "../models/Message.js";
 import User from "../models/User.js";
 import cloudinary from "../lib/cloudinary.js";
+import { io, getReceiverSocketId } from "../lib/socket.js";
 
 
 
@@ -65,6 +66,13 @@ export const sendMessage = async (req, res) => {
             image: imageUrl,
         });
         await newMessage.save();
+
+        // Emit real-time message via socket.io
+        const receiverSocketId = getReceiverSocketId(receiverId);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("getMessage", newMessage);
+        }
+
         res.status(201).json(newMessage);
     } catch (error) {
         console.log("error in sendMessage controller", error.message);
@@ -75,10 +83,48 @@ export const sendMessage = async (req, res) => {
 export const getAllPatners = async (req, res) => {
     try {
         const loggedInUserId = req.user._id;
-        const messages = await Message.find({ $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }] }).select("receiverId senderId");
-        const partnerIds = [...new Set([...messages.map(msg => msg.senderId.toString() === loggedInUserId.toString() ? msg.receiverId.toString() : msg.senderId.toString())])];
+        
+        // Find all messages involving the logged in user, sorted by createdAt descending
+        const messages = await Message.find({
+            $or: [{ senderId: loggedInUserId }, { receiverId: loggedInUserId }]
+        }).sort({ createdAt: -1 });
+
+        // Get unique partner IDs in the order of their latest messages
+        const partnerIds = [];
+        const partnerLatestMsg = {}; // partnerId -> message object
+
+        messages.forEach(msg => {
+            const partnerId = msg.senderId.toString() === loggedInUserId.toString()
+                ? msg.receiverId.toString()
+                : msg.senderId.toString();
+            
+            if (!partnerLatestMsg[partnerId]) {
+                partnerLatestMsg[partnerId] = msg;
+                partnerIds.push(partnerId);
+            }
+        });
+
+        // Fetch user details for these partner IDs
         const partners = await User.find({ _id: { $in: partnerIds } }).select("-password");
-        res.status(200).json(partners);
+
+        // Map them back to keep the order of partnerIds and attach lastMessage and lastMessageTimestamp
+        const partnersMap = new Map(partners.map(u => [u._id.toString(), u]));
+        
+        const orderedPartners = partnerIds
+            .map(id => {
+                const partnerObj = partnersMap.get(id);
+                if (!partnerObj) return null;
+                
+                const latestMsg = partnerLatestMsg[id];
+                return {
+                    ...partnerObj.toObject(),
+                    lastMessage: latestMsg.text || (latestMsg.image ? "Sent an image" : ""),
+                    lastMessageTimestamp: latestMsg.createdAt
+                };
+            })
+            .filter(Boolean);
+
+        res.status(200).json(orderedPartners);
     } catch (error) {
         console.log("error in getAllPatners controller", error.message);
         res.status(500).json({ error: "Internal server error" });
