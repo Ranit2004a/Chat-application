@@ -1,0 +1,31 @@
+# Ignore local node_modules
+**/node_modules
+Frontend/node_modules
+Backend/node_modules
+
+# Ignore local environment files and settings
+**/.env
+**/.env.*
+Backend/.env
+
+# Ignore build output folders
+Frontend/dist
+
+# Ignore logs
+**/logs
+**/*.log
+npm-debug.log*
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore version control and IDE settings
+.git
+.github
+.gitignore
+.vscode
+.idea
+
+# Ignore Stitch design assets
+stitch_assets
