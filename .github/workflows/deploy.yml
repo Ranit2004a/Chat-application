@@ -22,7 +22,9 @@ jobs:
           cd ~/Chat-application
 
           git pull origin main
-
+          
+          kubectl apply -f k8s/
+          
           docker build -t chat-backend:latest ./Backend
           docker build -t chat-frontend:latest ./Frontend
 
