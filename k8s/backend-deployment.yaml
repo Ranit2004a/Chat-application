@@ -3,6 +3,7 @@ kind: Deployment
 
 metadata:
   name: backend
+  namespace: chat-app
 
 spec:
   replicas: 2
@@ -19,8 +20,8 @@ spec:
     spec:
       containers:
       - name: backend
-        image: chat-backend:latest
-        imagePullPolicy: Never
+        image: ranitmondal/chat-backend:latest
+        imagePullPolicy: Always
 
         ports:
         - containerPort: 3000
