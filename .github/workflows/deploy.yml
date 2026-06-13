@@ -1,0 +1,39 @@
+name: Deploy to EC2 Kind Cluster
+
+on:
+ push:
+  branches:
+   - main
+
+jobs:
+ deploy:
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.2.0
+
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+
+        script: |
+          cd ~/Chat-application
+
+          git pull origin main
+          
+          kubectl apply -f k8s/
+          
+          docker build -t chat-backend:latest ./Backend
+          docker build -t chat-frontend:latest ./Frontend
+
+          kind load docker-image chat-backend:latest --name flashchat-cluster
+          kind load docker-image chat-frontend:latest --name flashchat-cluster
+
+          kubectl rollout restart deployment/backend || true
+          kubectl rollout restart deployment/frontend || true
+
+          kubectl rollout status deployment/backend
+          kubectl rollout status deployment/frontend
+
