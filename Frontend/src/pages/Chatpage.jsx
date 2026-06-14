@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useChatStore } from '../store/useChatStore';
 import { useAuthStore } from '../store/useAuthStore';
 import toast from 'react-hot-toast';
+import EmojiPicker from 'emoji-picker-react';
 
 const SidebarSkeleton = () => {
   return (
@@ -90,15 +91,36 @@ function Chatpage() {
 
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editInputText, setEditInputText] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const lastMessageIdRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setShowEmojiPicker(false);
+  }, [selectedUser]);
+
+  const handleEmojiClick = (emojiData) => {
+    setInputText((prevInput) => prevInput + emojiData.emoji);
+  };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setSelectedUser(null);
     setIsMobileSettingsDetailOpen(false);
+    setShowEmojiPicker(false);
   };
 
   const handleProfilePicUpload = async (e) => {
@@ -244,6 +266,7 @@ function Chatpage() {
     };
 
     setInputText('');
+    setShowEmojiPicker(false);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
 
@@ -296,7 +319,7 @@ function Chatpage() {
   );
 
   return (
-    <main className="w-full h-[90vh] max-w-[1400px] mx-4 flex bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden relative border border-white/40">
+    <main className="w-full h-screen md:h-[90vh] md:max-w-[1400px] md:mx-4 flex bg-white/70 backdrop-blur-xl rounded-none md:rounded-2xl shadow-2xl overflow-hidden relative border border-white/40">
 
       {/* 1. SideNavBar */}
       <aside className="hidden md:flex flex-col h-full py-6 px-4 bg-[#E7D7CC] border-r border-outline-variant w-64 select-none">
@@ -853,14 +876,14 @@ function Chatpage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-1.5">
-                <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
+              <div className="flex items-center gap-1">
+                <button className="hidden sm:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
                   <span className="material-symbols-outlined text-[20px]">videocam</span>
                 </button>
-                <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
+                <button className="hidden sm:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
                   <span className="material-symbols-outlined text-[20px]">call</span>
                 </button>
-                <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
+                <button className="hidden sm:block p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
                   <span className="material-symbols-outlined text-[20px]">notifications</span>
                 </button>
                 <button className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all">
@@ -870,7 +893,7 @@ function Chatpage() {
             </header>
 
             {/* Chat Message Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar flex flex-col bg-surface-bright/40">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 md:space-y-6 custom-scrollbar flex flex-col bg-surface-bright/40">
 
               {isMessagesLoading ? (
                 <MessagesSkeleton />
@@ -971,7 +994,7 @@ function Chatpage() {
                                   <img
                                     src={msg.image}
                                     alt="Attachment"
-                                    className="max-w-xs max-h-48 rounded-xl object-cover mb-2 border border-outline-variant shadow-sm"
+                                    className="max-w-[200px] sm:max-w-xs max-h-48 rounded-xl object-cover mb-2 border border-outline-variant shadow-sm"
                                   />
                                 )}
                                 {msg.text && (
@@ -1000,8 +1023,21 @@ function Chatpage() {
             </div>
 
             {/* Bottom Input Bar */}
-            <footer className="p-6 bg-white/35 backdrop-blur-md border-t border-outline-variant">
-              <form onSubmit={handleSend} className="space-y-4">
+            <footer className="p-4 md:p-6 bg-white/35 backdrop-blur-md border-t border-outline-variant relative">
+              
+              {/* Emoji Picker Popover */}
+              {showEmojiPicker && (
+                <div ref={emojiPickerRef} className="absolute bottom-20 md:bottom-24 right-4 md:right-6 z-50 shadow-2xl rounded-2xl overflow-hidden border border-outline-variant/30 select-none">
+                  <EmojiPicker
+                    onEmojiClick={handleEmojiClick}
+                    width={320}
+                    height={400}
+                    theme="light"
+                  />
+                </div>
+              )}
+
+              <form onSubmit={handleSend} className="space-y-3 md:space-y-4">
 
                 {/* Image Preview attachment panel */}
                 {imagePreview && (
@@ -1028,7 +1064,7 @@ function Chatpage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 bg-surface-container-low p-2 border border-primary rounded-full focus-within:ring-1 focus-within:ring-primary transition-all">
+                <div className="flex items-center gap-2 md:gap-4 bg-surface-container-low p-1.5 md:p-2 border border-primary rounded-full focus-within:ring-1 focus-within:ring-primary transition-all">
 
                   {/* File selectors */}
                   <input
@@ -1043,7 +1079,7 @@ function Chatpage() {
                     type="button"
                     title="Add file"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all flex items-center justify-center active:scale-95"
+                    className="hidden sm:flex p-2.5 md:p-3 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all items-center justify-center active:scale-95"
                   >
                     <span className="material-symbols-outlined">add_circle</span>
                   </button>
@@ -1052,7 +1088,7 @@ function Chatpage() {
                     type="button"
                     title="Attach Image"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-3 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all flex items-center justify-center active:scale-95"
+                    className="p-2.5 md:p-3 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all flex items-center justify-center active:scale-95"
                   >
                     <span className="material-symbols-outlined">image</span>
                   </button>
@@ -1063,16 +1099,16 @@ function Chatpage() {
                     placeholder="Type your message..."
                     value={inputText}
                     onChange={(e) => setInputText(e.target.value)}
-                    className="flex-1 bg-transparent border border-on-surface/20 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary font-body-lg text-body-lg text-on-surface py-2 px-3 outline-none"
+                    className="flex-1 bg-transparent border border-on-surface/20 rounded-lg focus:ring-1 focus:ring-primary focus:border-primary font-body-lg text-sm md:text-body-lg text-on-surface py-1.5 px-2.5 md:py-2 md:px-3 outline-none"
                   />
 
-                  {/* Emoji Placeholder & Send button */}
-                  <div className="flex items-center gap-2">
+                  {/* Emoji Picker Trigger & Send button */}
+                  <div className="flex items-center gap-1.5 md:gap-2">
                     <button
                       type="button"
                       title="Emojis"
-                      onClick={() => toast('Emoji picker feature coming soon!', { icon: '😃' })}
-                      className="p-3 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all flex items-center justify-center active:scale-95"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-2.5 md:p-3 text-on-surface-variant hover:text-primary hover:bg-surface-variant/50 rounded-full transition-all flex items-center justify-center active:scale-95"
                     >
                       <span className="material-symbols-outlined">mood</span>
                     </button>
@@ -1080,9 +1116,9 @@ function Chatpage() {
                     <button
                       type="submit"
                       disabled={isSending || (!inputText.trim() && !imagePreview)}
-                      className="w-12 h-12 bg-gradient-to-tr from-primary to-secondary-container hover:shadow-[0_8px_20px_rgba(176,100,5,0.3)] shadow-md text-white hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none"
+                      className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-tr from-primary to-secondary-container hover:shadow-[0_8px_20px_rgba(176,100,5,0.3)] shadow-md text-white hover:scale-105 active:scale-95 transition-all duration-300 rounded-2xl flex items-center justify-center relative overflow-hidden group disabled:opacity-50 disabled:scale-100 disabled:pointer-events-none shrink-0"
                     >
-                      <span className="material-symbols-outlined text-[20px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>
+                      <span className="material-symbols-outlined text-[18px] md:text-[20px] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" style={{ fontVariationSettings: "'FILL' 1" }}>
                         send
                       </span>
                     </button>
