@@ -1,39 +1,49 @@
-name: Deploy to EC2 Kind Cluster
+name: Deploy to K3s
 
 on:
- push:
-  branches:
-   - main
+  push:
+    branches:
+      - main
 
 jobs:
- deploy:
-  runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-  steps:
-    - name: Deploy via SSH
-      uses: appleboy/ssh-action@v1.2.0
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_SSH_KEY }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-        script: |
-          cd ~/Chat-application
+      - name: Build and Push Backend Image
+        run: |
+          docker build -t ranitmondal/chat-backend:latest ./Backend
+          docker push ranitmondal/chat-backend:latest
 
-          git pull origin main
-          
-          kubectl apply -f k8s/
-          
-          docker build -t chat-backend:latest ./Backend
-          docker build -t chat-frontend:latest ./Frontend
+      - name: Build and Push Frontend Image
+        run: |
+          docker build -t ranitmondal/chat-frontend:latest ./Frontend
+          docker push ranitmondal/chat-frontend:latest
 
-          kind load docker-image chat-backend:latest --name flashchat-cluster
-          kind load docker-image chat-frontend:latest --name flashchat-cluster
+      - name: Deploy to EC2 K3s Cluster
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/Chat-application
 
-          kubectl rollout restart deployment/backend || true
-          kubectl rollout restart deployment/frontend || true
+            git pull origin main
 
-          kubectl rollout status deployment/backend
-          kubectl rollout status deployment/frontend
+            kubectl apply -f k8s/
 
+            kubectl rollout restart deployment/backend -n chat-app
+            kubectl rollout restart deployment/frontend -n chat-app
+
+            kubectl rollout status deployment/backend -n chat-app
+            kubectl rollout status deployment/frontend -n chat-app
