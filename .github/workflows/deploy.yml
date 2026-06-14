@@ -45,6 +45,8 @@ jobs:
             kubectl get ns chat-app || kubectl apply -f k8s/namespace.yml
 
             kubectl apply -f k8s/secret.yaml  
+            kubectl apply -f k8s/redis-deployment.yaml
+            kubectl apply -f k8s/redis-service.yaml
             kubectl apply -f k8s/backend-deployment.yaml
             kubectl apply -f k8s/backend-service.yaml
             kubectl apply -f k8s/frontend-deployment.yaml
