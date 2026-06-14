@@ -42,8 +42,15 @@ jobs:
 
             git pull origin main
 
-            kubectl apply -f k8s/
+            kubectl get ns chat-app || kubectl apply -f k8s/namespace.yml
 
+            kubectl apply -f k8s/secret.yaml  
+            kubectl apply -f k8s/backend-deployment.yaml
+            kubectl apply -f k8s/backend-service.yaml
+            kubectl apply -f k8s/frontend-deployment.yaml
+            kubectl apply -f k8s/frontend-service.yaml
+            kubectl apply -f k8s/ingress.yaml
+            
             kubectl rollout restart deployment/backend -n chat-app
             kubectl rollout restart deployment/frontend -n chat-app
 
